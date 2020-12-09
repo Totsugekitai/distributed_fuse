@@ -1,0 +1,36 @@
+#include <assert.h>
+#include <errno.h>
+#include <stdint.h>
+#include <sys/stat.h>
+#include <margo.h>
+#include <mercury_proc_string.h>
+
+#include "rpc.h"
+extern struct env env;
+
+void init_rpc(margo_instance_id mid, hg_addr_t addr)
+{
+    env.mid = mid;
+    env.getattr_rpc   = MARGO_REGISTER(mid, "getattr",   hg_string_t,    stat_t,          getattr_rpc  );
+    env.readdir_rpc   = MARGO_REGISTER(mid, "readdir",   hg_string_t,    dirents_t,       readdir_rpc  );
+    env.open_rpc      = MARGO_REGISTER(mid, "open",      open_in_t,      int32_t,         open_rpc     );
+    env.read_rpc      = MARGO_REGISTER(mid, "read",      read_in_t,      read_out_t,      read_rpc     );
+    env.read_rdma_rpc = MARGO_REGISTER(mid, "read_rdma", read_rdma_in_t, read_rdma_out_t, read_rdma_rpc);
+}
+
+stat_t convert_stat2stat_t(struct stat *s, error_t e)
+{
+    stat_t new_stat = {0};
+    new_stat.error = e;
+    new_stat.ino = s->st_ino;
+    new_stat.mode = s->st_mode;
+    new_stat.nlink = s->st_nlink;
+    new_stat.uid = s->st_uid;
+    new_stat.gid = s->st_gid;
+    new_stat.size = s->st_size;
+    new_stat.atime = s->st_atim;
+    new_stat.mtime = s->st_mtim;
+    new_stat.ctime = s->st_ctim;
+    return new_stat;
+}
+
