@@ -1,6 +1,10 @@
 #ifndef __RPC_H__
 #define __RPC_H__
 
+#define TIMEOUT_MSEC (3000)
+#define PATH_LEN_MAX (0x100)
+#define ADDR_STR_LEN_MAX (0x100)
+
 #include <assert.h>
 #include <stdint.h>
 #include <margo.h>
@@ -52,13 +56,13 @@ static inline hg_return_t hg_proc_dirents_t(hg_proc_t proc, void *data)
     hg_return_t ret = hg_proc_int32_t(proc, &d->error);
     if (ret != HG_SUCCESS || d->error != 0) return (ret);
     ret = hg_proc_int32_t(proc, &d->n);
-    if (ret != HG_SUCCESS) return (ret);
+    //if (ret != HG_SUCCESS) return (ret);
     if (hg_proc_get_op(proc) == HG_DECODE) d->d = malloc(sizeof(dirent_t) * d->n);
     assert(d->d);
 
     for (int i = 0; i < d->n; ++i) {
         ret = hg_proc_dirent_t(proc, &d->d[i]);
-        if (ret != HG_SUCCESS) return (ret);
+        //if (ret != HG_SUCCESS) return (ret);
     }
     if (hg_proc_get_op(proc) == HG_FREE) free(d->d);
 
@@ -86,12 +90,12 @@ static inline hg_return_t hg_proc_read_out_t(hg_proc_t proc, void *data)
     hg_return_t ret = hg_proc_int32_t(proc, &d->error);
     if (ret != HG_SUCCESS || d->error != 0) return (ret);
     ret = hg_proc_int64_t(proc, &d->n);
-    if (ret != HG_SUCCESS) return (ret);
+    //if (ret != HG_SUCCESS) return (ret);
     if (hg_proc_get_op(proc) == HG_DECODE) d->buf = malloc(d->n);
     assert(d->buf);
 
     ret = hg_proc_memcpy(proc, d->buf, d->n);
-    if (ret != HG_SUCCESS) return (ret);
+    //if (ret != HG_SUCCESS) return (ret);
     if (hg_proc_get_op(proc) == HG_FREE) free(d->buf);
 
     return (ret);
@@ -118,8 +122,5 @@ void read_rpc(hg_handle_t h);
 DECLARE_MARGO_RPC_HANDLER(read_rpc)
 void read_rdma_rpc(hg_handle_t h);
 DECLARE_MARGO_RPC_HANDLER(read_rdma_rpc)
-
-/* procedure in rpc_helper.c */
-void init_rpc(margo_instance_id mid, hg_addr_t addr);
 
 #endif

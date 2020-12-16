@@ -5,11 +5,12 @@
 #include <mercury_proc_string.h>
 
 #include "../common/rpc.h"
+#include "../common/rpc_helper.h"
 
 int main(void)
 {
     // サーバの初期化
-    margo_instance_id mid = margo_init("tcp", MARGO_SERVER_MODE, 1, 10);
+    margo_instance_id mid = margo_init("na+sm", MARGO_SERVER_MODE, 0, 0);
     assert(mid);
 
     // サーバアドレスの取得
@@ -18,12 +19,9 @@ int main(void)
     char addr_str[PATH_MAX];
     size_t addr_str_size = sizeof(addr_str);
     margo_addr_to_string(mid, addr_str, &addr_str_size, server_address);
-    //margo_addr_free(mid, my_address);
+    margo_addr_free(mid, server_address);
 
     printf("Server running at address %s\n", addr_str);
-
-    // RPCの登録
-    init_rpc(mid, server_address);
 
     // メインループ
     margo_wait_for_finalize(mid);

@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <fuse3/fuse.h>
 #include "ops.h"
+#include "../common/rpc.h"
+#include "../common/rpc_helper.h"
+
+char server_addr_str[ADDR_STR_LEN_MAX] = {'\0'};
 
 static const struct fuse_operations dfs_op = {
     .init           = dfuse_init,
@@ -48,7 +52,7 @@ int main(int argc, char *argv[])
         fuse_opt_add_arg(&args, "-ho");
     }
 
-    int ret = fuse_main(args.argc, args.argv, &dfs_op, NULL);
+    int ret = fuse_main(args.argc, args.argv, &dfs_op, &options.server);
     fuse_opt_free_args(&args);
     return (ret);
 }
