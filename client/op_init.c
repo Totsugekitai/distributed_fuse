@@ -35,8 +35,8 @@ void *dfuse_init(struct fuse_conn_info *conn, struct fuse_config *fconfig)
 
     struct fuse_context *ctx = fuse_get_context();
     const char *server = ctx->private_data;
-    //strcpy(server_addr_str, server);
-    printf("%s\n", server);
+    strcpy(server_addr_str, server);
+    printf("%s\n", server_addr_str);
     dfs_init(server);
 
     return (NULL);

@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
         fuse_opt_add_arg(&args, "-ho");
     }
 
-    int ret = fuse_main(args.argc, args.argv, &dfs_op, &options.server);
+    int ret = fuse_main(args.argc, args.argv, &dfs_op, (void *)options.server);
     fuse_opt_free_args(&args);
     return (ret);
 }
