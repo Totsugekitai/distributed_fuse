@@ -105,12 +105,17 @@ void readdir_rpc(hg_handle_t h)
         fprintf(stderr, "[server] readdir RPC opendir error\n");
         exit(1);
     }
-    dirent_t dirent_array[DIRENT_MAX] = {0};
+    dirent_t dirent_array[DIRENT_MAX];
     struct dirent *dent = NULL;
     int32_t i = 0;
     while ((dent = readdir(dirp)) != NULL) {
+        printf("[server] struct dirent name: %s\n", dent->d_name);
         convert_dirent2dirent_t(dent, &dirent_array[i]);
         i++;
+        if (i >= DIRENT_MAX) {
+            fprintf(stderr, "error too many !!\n");
+            exit(1);
+        }
     }
 
     // dirents_t を構築する
@@ -118,6 +123,10 @@ void readdir_rpc(hg_handle_t h)
     dents.error = 0;
     dents.n = i;
     dents.d = dirent_array;
+
+    for (int i = 0; i < dents.n; i++) {
+        printf("[server] dents names: [%02d] %s\n", i, dents.d[i].name);
+    }
 
     // クライアント側に情報を返却する
     ret = margo_respond(h, &dents);
