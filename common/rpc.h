@@ -4,6 +4,7 @@
 #define TIMEOUT_MSEC (3000)
 #define PATH_LEN_MAX (0x100)
 #define ADDR_STR_LEN_MAX (0x100)
+#define DIRENT_MAX (1000)
 
 #include <assert.h>
 #include <stdint.h>
@@ -61,7 +62,7 @@ static inline hg_return_t hg_proc_dirents_t(hg_proc_t proc, void *data)
     assert(d->d);
 
     for (int i = 0; i < d->n; ++i) {
-        ret = hg_proc_dirent_t(proc, &d->d[i]);
+p        ret = hg_proc_dirent_t(proc, &d->d[i]);
         //if (ret != HG_SUCCESS) return (ret);
     }
     if (hg_proc_get_op(proc) == HG_FREE) free(d->d);

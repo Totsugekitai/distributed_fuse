@@ -9,6 +9,8 @@
 #include <margo.h>
 #include <mercury_proc_string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 struct env env;
 
@@ -39,16 +41,19 @@ DEFINE_MARGO_RPC_HANDLER(rpc_name)
 */
 void getattr_rpc(hg_handle_t h)
 {
+    printf("[server] getattr RPC received\n");
     // クライアントから送られてきた引数の受け取り
-    char path[PATH_LEN_MAX] = {'\0'};
-    hg_return_t ret = margo_get_input(h, path);
+    // margo_get_inputは内部のシリアライザででmallocしてくれるのでこれで良い
+    char *path;
+    hg_return_t ret = margo_get_input(h, &path);
     if (ret != HG_SUCCESS) {
         fprintf(stderr, "[server] getattr RPC get input error\n");
         exit(1);
     }
 
     // pathからgetattrして情報を取る
-    struct stat stbuf = {0};
+    printf("[server] got path %s\n", path);
+    struct stat stbuf;
     errno = 0;
     int err = stat(path, &stbuf);
     if (err == -1) {
@@ -56,12 +61,19 @@ void getattr_rpc(hg_handle_t h)
         exit(1);
     }
     stat_t st = convert_stat2stat_t(&stbuf, errno);
-    margo_free_input(h, &path);
 
     // クライアント側に情報を返却する
     ret = margo_respond(h, &st);
     if (ret != HG_SUCCESS) {
         fprintf(stderr, "[server] getattr RPC respond to client error\n");
+        exit(1);
+    }
+    printf("[server] getattr RPC respond OK\n");
+
+    // 入力引数の解放
+    ret = margo_free_input(h, &path);
+    if (ret != HG_SUCCESS) {
+        fprintf(stderr, "[server] readdir RPC free input error\n");
         exit(1);
     }
 
@@ -71,11 +83,64 @@ void getattr_rpc(hg_handle_t h)
         fprintf(stderr, "[server] getattr RPC destroy error\n");
         exit(1);
     }
+    printf("[server] getattr RPC end\n");
 }
 DEFINE_MARGO_RPC_HANDLER(getattr_rpc)
 
 void readdir_rpc(hg_handle_t h)
-{}
+{
+    printf("[server] readdir RPC received\n");
+    // クライアントから送られてきた引数の受け取り
+    char *path;
+    hg_return_t ret = margo_get_input(h, &path);
+    if (ret != HG_SUCCESS) {
+        fprintf(stderr, "[server] readdir RPC get input error\n");
+        exit(1);
+    }
+    printf("[server] readdir RPC get input OK\n");
+
+    // pathからreaddirして情報を得る
+    DIR *dirp = opendir(path);
+    if (dirp == NULL) {
+        fprintf(stderr, "[server] readdir RPC opendir error\n");
+        exit(1);
+    }
+    dirent_t dirent_array[DIRENT_MAX] = {0};
+    struct dirent *dent = NULL;
+    int32_t i = 0;
+    while ((dent = readdir(dirp)) != NULL) {
+        convert_dirent2dirent_t(dent, &dirent_array[i]);
+        i++;
+    }
+
+    // dirents_t を構築する
+    dirents_t dents;
+    dents.error = 0;
+    dents.n = i;
+    dents.d = dirent_array;
+
+    // クライアント側に情報を返却する
+    ret = margo_respond(h, &dents);
+    if (ret != HG_SUCCESS) {
+        fprintf(stderr, "[server] readdir RPC respond to client error\n");
+        exit(1);
+    }
+
+    // 入力引数の解放
+    ret = margo_free_input(h, &path);
+    if (ret != HG_SUCCESS) {
+        fprintf(stderr, "[server] readdir RPC free input error\n");
+        exit(1);
+    }
+
+    // 削除
+    ret = margo_destroy(h);
+    if (ret != HG_SUCCESS) {
+        fprintf(stderr, "[server] readdir RPC destroy error\n");
+        exit(1);
+    }
+    closedir(dirp);
+}
 DEFINE_MARGO_RPC_HANDLER(readdir_rpc)
 
 void open_rpc(hg_handle_t h)

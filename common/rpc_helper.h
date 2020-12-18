@@ -10,5 +10,6 @@
 void init_rpc(margo_instance_id mid, hg_addr_t addr);
 stat_t convert_stat2stat_t(struct stat *s, error_t e);
 void convert_stat_t2stat(stat_t *s, struct stat *new_stat, error_t *e);
+void convert_dirent2dirent_t(struct dirent *d, dirent_t *newd);
 
 #endif

@@ -1,3 +1,4 @@
+#include <string.h>
 #define FUSE_USE_VERSION 31
 #include <errno.h>
 #include <stdlib.h>
@@ -11,9 +12,9 @@
 #include "../common/rpc_helper.h"
 
 extern struct env env;
-extern char server_addr_str[];
+extern char server_addr_str[ADDR_STR_LEN_MAX];
 
-hg_return_t call_getattr_rpc(const char *path, stat_t *st)
+void call_getattr_rpc(const char *path, stat_t *st)
 {
     // サーバ側のアドレスをルックアップ
     hg_addr_t server_addr;
@@ -32,16 +33,25 @@ hg_return_t call_getattr_rpc(const char *path, stat_t *st)
     }
 
     // getattr RPCの呼び出し
-    ret = margo_forward_timed(h, (void *)path, TIMEOUT_MSEC);
+    printf("[client] sending path: %s\n", path);
+    ret = margo_forward_timed(h, &path, TIMEOUT_MSEC);
     if (ret != HG_SUCCESS) {
         fprintf(stderr, "[client] margo forward getattr RPC error\n");
         exit(1);
     }
 
     // サーバ側からのレスポンスを受け取る
-    ret = margo_get_output(h, st);
+    stat_t stat;
+    ret = margo_get_output(h, &stat);
     if (ret != HG_SUCCESS) {
         fprintf(stderr, "[client] margo get getattr RPC receiving error\n");
+        exit(1);
+    }
+    *st = stat;
+
+    ret = margo_free_output(h, &stat);
+    if (ret != HG_SUCCESS) {
+        fprintf(stderr, "[client] margo get getattr RPC free output error\n");
         exit(1);
     }
 
@@ -52,15 +62,16 @@ hg_return_t call_getattr_rpc(const char *path, stat_t *st)
         exit(1);
     }
 
-    return ret;
+    printf("[client] call getattr RPC end\n");
 }
 
 int dfuse_getattr(const char *path, struct stat *st, struct fuse_file_info *fi)
 {
     (void)fi;
-
     stat_t rpc_return;
+    printf("[client] dfuse getattr path: %s\n", path);
     call_getattr_rpc(path, &rpc_return);
+    printf("[client] call getattr RPC detach\n");
     error_t e = 0;
     convert_stat_t2stat(&rpc_return, st, &e);
     if (e != 0) {

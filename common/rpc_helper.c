@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <dirent.h>
 #include <errno.h>
 #include <stdint.h>
 #include <sys/stat.h>
@@ -6,17 +7,18 @@
 #include <mercury_proc_string.h>
 
 #include "rpc.h"
+#include "rpc_helper.h"
 extern struct env env;
 
 void init_rpc(margo_instance_id mid, hg_addr_t addr)
 {
     env.mid = mid;
     env.addr = addr;
-    env.getattr_rpc   = MARGO_REGISTER(mid, "getattr",   hg_string_t,    stat_t,          getattr_rpc  );
-    env.readdir_rpc   = MARGO_REGISTER(mid, "readdir",   hg_string_t,    dirents_t,       readdir_rpc  );
-    env.open_rpc      = MARGO_REGISTER(mid, "open",      open_in_t,      int32_t,         open_rpc     );
-    env.read_rpc      = MARGO_REGISTER(mid, "read",      read_in_t,      read_out_t,      read_rpc     );
-    env.read_rdma_rpc = MARGO_REGISTER(mid, "read_rdma", read_rdma_in_t, read_rdma_out_t, read_rdma_rpc);
+    env.getattr_rpc   = MARGO_REGISTER(mid, "getattr",   hg_string_t,    stat_t,          NULL);
+    env.readdir_rpc   = MARGO_REGISTER(mid, "readdir",   hg_string_t,    dirents_t,       NULL);
+    env.open_rpc      = MARGO_REGISTER(mid, "open",      open_in_t,      int32_t,         NULL);
+    env.read_rpc      = MARGO_REGISTER(mid, "read",      read_in_t,      read_out_t,      NULL);
+    env.read_rdma_rpc = MARGO_REGISTER(mid, "read_rdma", read_rdma_in_t, read_rdma_out_t, NULL);
 }
 
 stat_t convert_stat2stat_t(struct stat *s, error_t e)
@@ -47,4 +49,11 @@ void convert_stat_t2stat(stat_t *s, struct stat *new_stat, error_t *e)
     new_stat->st_atim  = s->atime;
     new_stat->st_mtim  = s->mtime;
     new_stat->st_ctim  = s->ctime;
+}
+
+void convert_dirent2dirent_t(struct dirent *d, dirent_t *newd)
+{
+    newd->ino = d->d_ino;
+    newd->type = d->d_type;
+    newd->name = d->d_name;
 }

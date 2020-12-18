@@ -23,6 +23,12 @@ int main(void)
 
     printf("Server running at address %s\n", addr_str);
 
+    MARGO_REGISTER(mid, "getattr",   hg_string_t,    stat_t,          getattr_rpc  );
+    MARGO_REGISTER(mid, "readdir",   hg_string_t,    dirents_t,       readdir_rpc  );
+    MARGO_REGISTER(mid, "open",      open_in_t,      int32_t,         open_rpc     );
+    MARGO_REGISTER(mid, "read",      read_in_t,      read_out_t,      read_rpc     );
+    MARGO_REGISTER(mid, "read_rdma", read_rdma_in_t, read_rdma_out_t, read_rdma_rpc);
+
     // メインループ
     margo_wait_for_finalize(mid);
 

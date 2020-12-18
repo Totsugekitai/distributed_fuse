@@ -24,7 +24,7 @@ int dfs_init(const char *server)
         exit(1);
     }
     init_rpc(mid, addr);
-
+    
     return 0;
 }
 
