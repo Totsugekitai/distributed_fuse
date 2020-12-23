@@ -6,6 +6,8 @@
 #include <sys/stat.h>
 #include <fuse3/fuse.h>
 
+int32_t call_open_rpc(const char *path, int flags);
+
 int dfuse_getattr(const char *path, struct stat *st, struct fuse_file_info *fi);
 void *dfuse_init(struct fuse_conn_info *conn, struct fuse_config *fconfig);
 int dfuse_open(const char *path, struct fuse_file_info *fi);

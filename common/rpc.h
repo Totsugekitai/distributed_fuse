@@ -59,7 +59,7 @@ static inline hg_return_t hg_proc_dirents_t(hg_proc_t proc, void *data)
     ret = hg_proc_int32_t(proc, &d->n);
     //if (ret != HG_SUCCESS) return (ret);
     if (hg_proc_get_op(proc) == HG_DECODE) d->d = malloc(sizeof(dirent_t) * d->n);
-    assert(d->d);
+    //assert(d->d);
 
     for (int i = 0; i < d->n; ++i) {
         ret = hg_proc_dirent_t(proc, &d->d[i]);
@@ -93,7 +93,7 @@ static inline hg_return_t hg_proc_read_out_t(hg_proc_t proc, void *data)
     ret = hg_proc_int64_t(proc, &d->n);
     //if (ret != HG_SUCCESS) return (ret);
     if (hg_proc_get_op(proc) == HG_DECODE) d->buf = malloc(d->n);
-    assert(d->buf);
+    //assert(d->buf);
 
     ret = hg_proc_memcpy(proc, d->buf, d->n);
     //if (ret != HG_SUCCESS) return (ret);

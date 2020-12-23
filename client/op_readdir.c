@@ -37,6 +37,7 @@ void call_readdir_rpc(const char *path, fuse_fill_dir_t filler, void *buf)
     }
 
     // readdir RPCの呼び出し
+    printf("[client] sending path in readdir RPC: %s\n", path);
     ret = margo_forward_timed(h, &path, TIMEOUT_MSEC);
     if (ret != HG_SUCCESS) {
         fprintf(stderr, "[client] margo forward readdir RPC error\n");

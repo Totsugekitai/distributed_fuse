@@ -33,7 +33,7 @@ void call_getattr_rpc(const char *path, stat_t *st)
     }
 
     // getattr RPCの呼び出し
-    printf("[client] sending path: %s\n", path);
+    printf("[client] sending path in getattr RPC: %s\n", path);
     ret = margo_forward_timed(h, &path, TIMEOUT_MSEC);
     if (ret != HG_SUCCESS) {
         fprintf(stderr, "[client] margo forward getattr RPC error\n");
