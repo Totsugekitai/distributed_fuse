@@ -1,3 +1,4 @@
 dfs
 *.o
 .gdb_history
+report/
